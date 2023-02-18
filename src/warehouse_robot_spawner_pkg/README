@@ -1,0 +1,3 @@
+create a pacakge named warehouse_robot_spawner_pkg
+colcon build the package
+use the launch file to load the world
