@@ -12,6 +12,9 @@ def time_a_star(path):
 
 
 def astar(start, goal, ox, oy):
+	Obs_list = []
+	for ixx, iyy in zip(ox, oy):
+		Obs_list.append((ixx,iyy))
 	Open_list = []
 	Closed_list = []
 	g = dict()
@@ -27,15 +30,17 @@ def astar(start, goal, ox, oy):
 		if s == goal:
 			break
 		for s_n in find_neighbors(s):
-			new_cost = g[start] + cost(start, s_n)
-			if s_n not in g:
-				g[s_n] = math.inf
-			
-			if new_cost < g[s_n]:
-				g[s_n] = new_cost
-					
-				Parent[s_n] = s
-				heapq.heappush(Open_list, (f_value(s_n, g[s_n], goal), s_n))
+			#new_cost = g[start] + cost(start, s_n)
+			new_cost = g[s] + cost(s, s_n)			
+			if s_n not in Obs_list:
+				if s_n not in g:
+					g[s_n] = math.inf
+				
+				if new_cost < g[s_n]:
+					g[s_n] = new_cost
+						
+					Parent[s_n] = s
+					heapq.heappush(Open_list, (f_value(s_n, g[s_n], goal), s_n))
 	path = extract_path(Parent, start, goal)
 	return path
 
@@ -53,11 +58,14 @@ def extract_path(Parent, start, goal):
 def cost(p1,p2):
 	return np.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
 
-def h_cost(p1, p2):
-	return np.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
+def h_cost(p1, p2, heuristic = 'Euclidean'):
+	if heuristic == 'Euclidean':
+		return np.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
+	elif heuristic == 'Manhatten':
+		return abs(p1[0]-p2[0]) + abs(p1[1]-p2[1])
 
-def f_value(s, g, goal):
-	return g + h_cost(s, goal)
+def f_value(s, g, goal, heuristic = 'Euclidean'):
+	return g + h_cost(s, goal, heuristic)
 
 def find_neighbors(node):
 	neighbors = []
@@ -73,6 +81,85 @@ def find_neighbors(node):
 	#print('neighors = ', neighbors)
 	return neighbors
 
+def Manhatten(Q,O):
+	return (abs(Q[0]-O[0]) + abs(Q[1] - O[1]))
 
 
+#Need to update below procedures
+
+def RRA_star(goal, start, ox, oy):
+	Obs_list = []
+	for ixx, iyy in zip(ox, oy):
+		Obs_list.append((ixx,iyy))
+	Open_list = []
+	Closed_list = []
+	g = dict()
+	Parent = dict()
+	g[start] = 0
+	g[goal] = math.inf
+	Parent[start] = start
+	heapq.heappush(Open_list, (f_value(start, g[start], goal), start))	
+	
+	while Open_list:
+		_, s = heapq.heappop(Open_list)
+		Closed_list.append(s)
+		if s == goal:
+			break
+		for s_n in find_neighbors(s):
+			#new_cost = g[start] + cost(start, s_n)
+			new_cost = g[s] + cost(s, s_n)			
+			if s_n not in Obs_list:
+				if s_n not in g:
+					g[s_n] = math.inf
+				
+				if new_cost < g[s_n]:
+					g[s_n] = new_cost
+						
+					Parent[s_n] = s
+					heapq.heappush(Open_list, (f_value(s_n, g[s_n], goal), s_n))
+	path = extract_path(Parent, start, goal)
+	dists = list(g.values())
+	dists = sorted(dists)
+	print('g = ', g)
+	print('dists = ', dists)
+	return False, g
+
+def AbstractDist(N, G, ox, oy):
+	print(f'abstract distance of {N} from {G}')
+	update, g = RRA_star(N, G, ox, oy)
+	return g[N]
+	
+#Need to improve this function in future. It does not give correct answer as of now
+def partial_path(start, goal, ox, oy, depth):
+	Obs_list = []
+	for ixx, iyy in zip(ox, oy):
+		Obs_list.append((ixx,iyy))
+	Open_list = []
+	Closed_list = []
+	g = dict()
+	Parent = dict()
+	g[start] = 0
+	g[goal] = math.inf
+	Parent[start] = start
+	heapq.heappush(Open_list, (f_value(start, g[start], goal), start))	
+	
+	while Open_list and len(Closed_list)<depth:
+		_, s = heapq.heappop(Open_list)
+		Closed_list.append(s)
+		if s == goal:
+			break
+		for s_n in find_neighbors(s):
+			#new_cost = g[start] + cost(start, s_n)
+			new_cost = g[s] + cost(s, s_n)			
+			if s_n not in Obs_list:
+				if s_n not in g:
+					g[s_n] = math.inf
+				
+				if new_cost < g[s_n]:
+					g[s_n] = new_cost
+						
+					Parent[s_n] = s
+					heapq.heappush(Open_list, (f_value(s_n, g[s_n], goal), s_n))
+	path = extract_path(Parent, start, goal)
+	return path
 

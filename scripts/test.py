@@ -1,10 +1,9 @@
 from astar import *
 import math
 import numpy
-from draw import draw_bot
+from draw import draw_bot, draw_endpoint
 import matplotlib.pyplot as plt
 import time 
-from multiprocessing import Process
 
 def update_time_dict(time_keys, path):
 	new_time_keys = time_a_star(path)
@@ -29,8 +28,6 @@ def update_path(time_keys, path):
 def plot_path_update(path_list):
 	n = len(path_list)
 	len_list = [len(path) for path in path_list]
-	print('len list = ',len_list)
-	print('max = ',max(len_list))
 	for path in path_list:
 		diff = max(len_list) - len(path)
 		if diff != 0:
@@ -38,18 +35,33 @@ def plot_path_update(path_list):
 				path.append(path[-1])
 
 	len_list = [len(path) for path in path_list]
-	print('len list = ',len_list)
-	print('max = ',max(len_list))
 
 	return path_list
 
 
 def main():
-	start_pts = [(5,5), (7,5), (1,6), (15,22)]
-	goal_pts = [(7,11), (3,17), (8,17), (3,10)]
+	start_pts = [(5,5), (7,5), (1,6), (15,22), (24,12), (21,20), (19,3), (25,20),(4,12)]
+	goal_pts = [(7,11), (3,17), (8,17), (3,10), (12,4), (2,2), (3,13), (4,20),(25,20)]
 	ox, oy = [], []
 	path_list = []
 	
+	for i in range(15,21):
+		ox.append(i)
+		oy.append(12)
+
+	for i in range(15,22):
+		ox.append(i)
+		oy.append(19)
+
+	for i in range(12,19):
+		oy.append(i)
+		ox.append(15)
+
+	for i in range(12,19):
+		oy.append(i)
+		ox.append(21)
+		
+
 	for i in range(len(start_pts)):
 		#calculate shortest path
 		path = astar(start_pts[i], goal_pts[i], ox, oy)
@@ -64,23 +76,29 @@ def main():
 		path_list.append(path)
 		path_all = plot_path_update(path_list)	
 
-	#----------------------------------- start of plotting -----------------------------------------------/	
-	for i in range(len(path_all[0])):
-		plt.cla()
-		plt.plot(ox,oy,'sk')
-		for start, goal in zip(start_pts, goal_pts):
-			plt.plot(start[0], start[1],'sg')
-			plt.plot(goal[0], goal[1],'sr')
-			
-		for path_n in path_all:
-			draw_bot(path_n[i][0], path_n[i][1])
-		plt.axis('equal')
-		plt.xlim([0,30])
-		plt.ylim([0,30])
-		plt.show(block=False)	
-		plt.pause(0.5)
-		
-
+	#-------------------------------------- start of plotting -----------------------------------------------
+	vis = False
+	if vis:
+		for i in range(len(path_all[0])):
+			plt.cla()
+			plt.plot(ox,oy,'sk')
+			for start, goal in zip(start_pts, goal_pts):
+				#draw_endpoint(start, 'orange')
+				draw_endpoint(goal,'grey')
+				
+			for path_n in path_all:
+				draw_bot(path_n[i][0], path_n[i][1])
+			plt.axis('equal')
+			plt.xlim([-5,30])
+			plt.ylim([-5,30])
+			plt.show(block=False)	
+			plt.pause(0.8)
+	plt.show()		
+	#abstract distace of any point from a goal point
+	x = (24,24)
+	y = AbstractDist(x, goal_pts[-1], ox, oy)
+	
+	
 	
 if __name__ == "__main__":
 	main()
